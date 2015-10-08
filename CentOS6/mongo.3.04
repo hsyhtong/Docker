@@ -1,0 +1,19 @@
+#
+# 导入数据 mongorestore /data/db/  
+# 获取container IP： docker exec mongo ip a
+#
+
+FROM centos:6
+
+COPY ./mongodb-org-3.0.repo /etc/yum.repos.d/mongodb-org-3.0.repo
+
+RUN yum -y install mongodb-org \
+		&& yum -y clean all 
+
+RUN sed -e '/logpath/s/\/var\/log\/mongodb/\/data\/logs\/mongo/' \
+		-e '/dbpath/s/\/var\/lib/\/data\/db\/gudong/' \
+		-e '/bind_ip/d' \
+		-i /etc/mongod.conf
+
+EXPOSE 27017
+CMD ["mongod"]

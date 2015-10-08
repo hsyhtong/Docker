@@ -1,0 +1,28 @@
+#
+# php-fpm 重启：
+# kill -USR2 `cat /usr/local/php/var/run/php-fpm.pid`
+#
+
+FROM centos:6
+
+RUN yum -y install php55-5.5.25 tar && yum clean all 
+
+RUN sed -e 's/127.0.0.1:9000/9000/' \
+		-e '/allowed_clients/d' \
+		-e '/catch_workers_output/s/^;//' \
+		-e '/error_log/d' \
+		-i usr/local/php/etc/php-fpm.conf
+
+COPY ./nebuna_php_rpc.tar.gz /usr/local/src/
+
+RUN tar -zxf nebuna_php_rpc.tar.gz \
+	&& cd nebuna_php_rpc \
+	&& /usr/local/php/bin/phpize \
+	&& ./configure --with-php-config=/usr/local/php/bin/php-config \
+	&& make \
+	&& make install \
+	&& sed -i '/extension_dir = "ext"/aextension = "nebuna_php_rpc.so" ' /usr/local/php/etc/php.ini \  
+    && rm -rf /usr/local/src/ebuna_php_rpc*
+
+EXPOSE 9000
+ENTRYPOINT /usr/sbin/php-fpm --nodaemonize

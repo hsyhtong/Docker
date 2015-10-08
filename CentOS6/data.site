@@ -1,0 +1,35 @@
+####---------------------
+# data/
+# |-- db
+# |   `-- gudong
+# |   `-- iasset
+# |-- etc
+# |   `-- nginx
+# |       `-- conf.d
+# |-- site
+# |   `-- htdocs
+# |       `-- good
+# |       `-- iasset
+# `-- logs
+#     |-- mariadb
+#     |-- mongo
+#     |-- nginx
+#     `-- php
+####---------------------
+
+
+#  
+# 固定位置，不易修改，适合线上  
+#  
+FROM centos:6  
+COPY ./data /data  
+VOLUME /data
+
+
+#
+#  映射位置，可以把开发目录映射到docker container里面，修改即时生效,在容器里修改    
+#  文件容器外面源文件也会被修改.  
+#  多个container有多个用户，需注意文件访问权限问题
+#  docker create --name site -v /workspace/(project dir):/data/site/htdocs/(project dir) docker.io/centos:6  
+
+#  > 删除数据容器：docker rm -v site

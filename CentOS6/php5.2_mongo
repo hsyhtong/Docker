@@ -1,0 +1,34 @@
+FROM centos:6
+
+RUN yum -y install php-5.2.13 \
+	&& yum -y clean all
+
+RUN cd /usr/local/src \
+		&& curl -O http://pecl.php.net/get/mongo-1.5.8.tgz \
+		&& yum -y install autoconf cmake gcc tar\ 
+		&& tar zxvf /usr/local/src/mongo-1.5.8.tgz \
+		&& cd mongo-1.5.8 \
+		&& /usr/local/php/bin/phpize \
+		&& ./configure --with-php-config=/usr/local/php/bin/php-config \
+		&& make \
+		&& make install \
+		&& make distclean \
+		&& rm -rf mongo-1.5.8.tgz package.xml \
+	&& yum -y remove autoconf gcc cmake tar\
+	&& yum -y clean all
+
+RUN sed -e '/nebuna_php_rpc/aextension = "mongo.so"' \
+		-e '/session.auto_start/s/0/1/' \
+		-i /usr/local/php/etc/php.ini \
+	&& sed -e 's/127.0.0.1:9000/9000/' \
+		-e '/allowed_client/d' \
+		-e '/daemonize/s/yes/no/' \
+		-e '/max_children/s/200/20/' \
+		-e '/StartServers/s/20/8/' \
+		-e '/MaxSpareServers/s/35/15/' \
+		-e '/error_log/d' \
+		-i /usr/local/php/etc/php-fpm.conf
+
+EXPOSE 9000
+
+ENTRYPOINT /usr/local/php/bin/php-cgi --fpm
