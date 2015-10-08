@@ -1,5 +1,3 @@
-#Docker
-
 data/  
  |-- db/{gudong,iasset}  
  |-- etc/nginx/conf.d  
